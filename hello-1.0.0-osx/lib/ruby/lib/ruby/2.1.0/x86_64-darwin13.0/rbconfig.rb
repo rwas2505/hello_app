@@ -16,7 +16,7 @@ module RbConfig
   CONFIG["PATCHLEVEL"] = "273"
   CONFIG["INSTALL"] = '/usr/bin/install -c'
   CONFIG["EXEEXT"] = ""
-  CONFIG["prefix"] = (TOPDIR || DESTDIR + "/tmp/ruby")
+  CONFIG["prefix"] = (TOPDIR || DESTDIR + "/tmp/ruby-2.1.5/inst")
   CONFIG["ruby_install_name"] = "ruby"
   CONFIG["RUBY_INSTALL_NAME"] = "ruby"
   CONFIG["RUBY_SO_NAME"] = "ruby"
@@ -36,7 +36,7 @@ module RbConfig
   CONFIG["RUBY_SEARCH_PATH"] = ""
   CONFIG["UNIVERSAL_INTS"] = ""
   CONFIG["UNIVERSAL_ARCHNAMES"] = ""
-  CONFIG["configure_args"] = " '--prefix' '/tmp/ruby' '--disable-install-doc' '--disable-install-rdoc' '--disable-install-capi' '--without-ext=tk,gdbm,dbm,dl,coverage' '--with-openssl-dir=/Users/hongli/Projects/traveling-ruby/osx/runtime' 'CC=/Users/hongli/Projects/traveling-ruby/osx/internal/bin/cc' 'CXX=/Users/hongli/Projects/traveling-ruby/osx/internal/bin/c++'"
+  CONFIG["configure_args"] = " '--prefix' '/tmp/ruby-2.1.5/inst' '--disable-install-doc' '--disable-install-rdoc' '--disable-install-capi' '--without-ext=tk,sdbm,gdbm,dbm,dl,coverage' '--with-openssl-dir=/Users/hongli/Projects/traveling-ruby/osx/runtime' 'CC=/Users/hongli/Projects/traveling-ruby/osx/internal/bin/cc' 'CXX=/Users/hongli/Projects/traveling-ruby/osx/internal/bin/c++'"
   CONFIG["vendorarchdir"] = "$(vendorlibdir)/$(sitearch)"
   CONFIG["vendorlibdir"] = "$(vendordir)/$(ruby_version)"
   CONFIG["vendordir"] = "$(rubylibprefix)/vendor_ruby"
@@ -53,7 +53,7 @@ module RbConfig
   CONFIG["sitearchlibdir"] = "$(libdir)/$(sitearch)"
   CONFIG["archlibdir"] = "$(libdir)/$(arch)"
   CONFIG["libdirname"] = "libdir"
-  CONFIG["RUBY_EXEC_PREFIX"] = "/tmp/ruby"
+  CONFIG["RUBY_EXEC_PREFIX"] = "/tmp/ruby-2.1.5/inst"
   CONFIG["RUBY_LIB_VERSION"] = ""
   CONFIG["RUBY_LIB_VERSION_STYLE"] = "3\t/* full */"
   CONFIG["RI_BASE_NAME"] = "ri"
@@ -135,7 +135,7 @@ module RbConfig
   CONFIG["RMDIR"] = "rmdir"
   CONFIG["CP"] = "cp"
   CONFIG["RM"] = "rm -f"
-  CONFIG["PKG_CONFIG"] = ""
+  CONFIG["PKG_CONFIG"] = "pkg-config"
   CONFIG["PYTHON"] = ""
   CONFIG["DOXYGEN"] = ""
   CONFIG["DOT"] = ""
@@ -266,3 +266,17 @@ module RbConfig
 end
 autoload :Config, "rbconfig/obsolete.rb" # compatibility for ruby-1.8.4 and older.
 CROSS_COMPILING = nil unless defined? CROSS_COMPILING
+
+# Traveling Ruby modifications:
+# get rid of our custom compilation flags.
+[RbConfig::CONFIG, RbConfig::MAKEFILE_CONFIG].each do |config|
+  config["CC"] = (String.new << "xcrun clang")
+  config["CXX"] = (String.new << "xcrun clang++")
+  config["CPP"] = (String.new << "xcrun clang -E")
+  config["LDSHARED"] = (String.new << "xcrun clang -dynamic -bundle")
+  config["LDSHAREDXX"] = (String.new << "xcrun clang++ -dynamic -bundle")
+  config["CFLAGS"] = config["cflags"].dup
+  config["CXXFLAGS"] = config["cxxflags"].dup
+  config["RUBY_EXEC_PREFIX"] = config["exec_prefix"].dup
+  config.delete("CC_VERSION")
+end
